@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="/libs/katex/katex.min.css">
+     
+   <link rel="stylesheet" href="/libs/highlight/github.min.css">
+   
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+<link rel="stylesheet" href="/css/franklin.css">
+<link rel="stylesheet" href="/css/timothylin.css">
+
+<link rel="icon" href="/assets/personal.svg">
+
+   <title>Turn Left at the Next Prime</title>  
+  
+</head>
+<body class="bg-dark text-light">
+<div id="particles" class="position-fixed top-0 bottom-0 start-0 end-0"></div>
+<div class="d-flex flex-column justify-content-between flex-grow-1 position-absolute top-0 start-0 end-0 bottom-0">
+  <div class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark border-bottom border-1 border-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" aria-current="page" href="/">
+      <img src="/assets/personal.svg" alt="Timothy Lin's logo" width="30" height="30" class="d-inline-block align-text-top">
+      Timothy Lin
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="/posts/">Blog</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Places
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="https://work.timothylin.me/">
+              <i class="fas fa-fw fa-pen-nib" aria-hidden="true"></i> Polywork
+            </a></li>
+            <li><a class="dropdown-item" href="https://www.linkedin.com/in/tmthyln/" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i> LinkedIn
+            </a></li>
+            <li><a class="dropdown-item" href="https://github.com/tmthyln/" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-github-square" aria-hidden="true"></i> GitHub
+            </a></li>
+            <li><a class="dropdown-item" href="https://www.cs.umd.edu/~tlin/" rel="nofollow noopener noreferrer">
+              <i class="fas fa-fw fa-university" aria-hidden="true"></i> UMD CS Website
+            </a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+  <div id="main" class="container" role="main">
+
+
+<div class="franklin-content" >
+  <div class="sidetoc"><div class="toc"><ol><li><a href="#code_reimplementation"> Code Reimplementation</a></li><li><a href="#gaussian_prime_spirals"> Gaussian Prime Spirals</a></li><li><a href="#extra_code"> Extra Code</a></li></ol></div></div><h1 id="turn_left_at_the_next_prime" ><a href="#turn_left_at_the_next_prime"> Turn Left at the Next Prime</a></h1><p>A while ago, John Cook made a
+<a href="https://www.johndcook.com/blog/2020/09/24/gaussian_integer_walk/">post</a>
+about Gaussian integer walks. See his post for the details, but at the end, he provides
+some Python code which he uses to generate the walks/plots. However, just for the
+simulation starting at \(127 + 130i\), it took several minutes for the whole process,
+including plotting, which just seemed completely unreasonable to me as a Julia user. So
+of course, I wanted to see if I could reimplement that code in Julia to be much faster
+and yet not sacrifice ease of readability.</p>
+<p>The basic premise is this: start at some point in the complex plane (with integer
+coefficients), facing east. Move unit-by-unit until the number is a
+<a href="https://en.wikipedia.org/wiki/Gaussian_integer#:%7E:text=A%20Gaussian%20integer%20a%20%2B%20bi%20is%20a%20Gaussian%20prime%20if,the%20form%204n%20%2B%203">Gaussian prime</a>;
+if Gaussian prime, turn left.</p>
+<h2 id="code_reimplementation" ><a href="#code_reimplementation"> Code Reimplementation</a></h2><p>The first thing we need is a function to determine if a complex number is a
+Gaussian prime (Julia uses <code>im</code> for the imaginary unit):</p>
+<pre><code class="julia">function isgaussprime(z::Complex&lbrace;&lt;:Integer&rbrace;)
+    a, b = real(z), imag(z)
+    if a * b != 0
+        return isprime(a^2 + b^2)
+    else
+        c = abs(a+b)
+        return isprime(c) &amp;&amp; c % 4 == 3
+	end
+end</code></pre>
+<p>To do the Gaussian walk, we are going to write the function <code>walk</code> that starts at some
+point and keeps walking up to some limit (these walks all end up spirally, so we need
+some limit):</p>
+<pre><code class="julia">function walk(start, limit = 10)
+	points = [start]
+	z = start
+	delta = 1
+
+	while limit &gt; 0
+		z = z + delta
+		push!(points, z)
+
+		isgaussprime(z) &amp;&amp; (delta *= im)
+		z == start &amp;&amp; break
+		limit -= 1
+	end
+
+	points
+end</code></pre>
+<p>To support the interactivity, I also have some other related functions, see the attached
+notebook.</p>
+<p>(To be fair, the code above doesn't quite do the same thing as the original code in a
+couple of ways, but it should still be straightforward to understand. There is also a huge
+speed improvement, to the point that this can be done interactively.)</p>
+<h2 id="gaussian_prime_spirals" ><a href="#gaussian_prime_spirals"> Gaussian Prime Spirals</a></h2><p>The cool part is what happens when we plot the walk for various complex numbers. To
+verify the implementation against the original code, we'll use the same examples. First,
+for \(3 + 5i\),</p>
+<span style="color:red;">[FAILED:]&gt;\fig&lt;</span>{spiral-3 + 5im.png}<p>The one that took a few minutes to plot:</p>
+<span style="color:red;">[FAILED:]&gt;\fig&lt;</span>{spiral-127 + 130im.png}<p>The behavior honestly is very weird. A larger Gaussian prime doesn't necessarily mean a
+longer period. Although a lot of these are symmetrical in some way, a lot aren't; for
+example, \(127+144i\) looks very not symmetrical (and is pretty short):</p>
+<span style="color:red;">[FAILED:]&gt;\fig&lt;</span>{spiral-127 + 144im.png}<h2 id="extra_code" ><a href="#extra_code"> Extra Code</a></h2><p>The full Pluto notebook is
+<a href="https://github.com/tmthyln/notebooks/tree/master/LeftAtTheNextPrime">here</a>
+for your perusal.</p>
+<p>To determine the period of the cycle for a walk starting from some point:</p>
+<pre><code class="julia">function walklimit(start)
+	limit = 1
+	z = start
+	delta = 1
+
+	while true
+		z = z + delta
+
+		isgaussprime(z) &amp;&amp; (delta *= im)
+		z == start &amp;&amp; break
+		limit += 1
+	end
+
+	limit + 1
+end</code></pre>
+<p>To determine the bounds of the cycle in order to draw a graph with the best range:</p>
+<pre><code class="julia">function walkbounds(start)
+	min_real, max_real, min_imag, max_imag = real(start), real(start), imag(start), imag(start)
+	z = start
+	delta = 1
+
+	while true
+		z = z + delta
+
+		min_real = min(min_real, real(z))
+		max_real = max(max_real, real(z))
+		min_imag = min(min_imag, imag(z))
+		max_imag = max(max_imag, imag(z))
+
+		isgaussprime(z) &amp;&amp; (delta *= im)
+		z == start &amp;&amp; break
+	end
+
+	(min_real, max_real), (min_imag, max_imag)
+end</code></pre>
+
+  <div class="page-foot">
+  
+
+</div>
+
+</div>
+
+
+      </div> 
+      <div class="footer flex-grow-0 mt-auto bg-dark border-top border-light">
+          <footer>
+              <div class="copyright text-center mb-3 mt-3">&copy; Timothy Lin. Last modified: 1.6445099281290176e9. Powered by <a href="https://github.com/tlienart/Franklin.jl">Franklin</a>.</div>
+          </footer>
+      </div>
+    </div>   
+
+    
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+
+
+<script defer src="https://use.fontawesome.com/releases/v5.8.2/js/all.js" integrity="sha384-DJ25uNYET2XCl5ZF++U8eNxPWqcKohUUBUpKGlNLMchM7q4Wjg2CUpjHLaL8yYPH" crossorigin="anonymous"></script>
+
+
+
+    <script src="/libs/katex/katex.min.js"></script>
+<script src="/libs/katex/auto-render.min.js"></script>
+<script>renderMathInElement(document.body)</script>
+
+
+
+
+
+    <script src="/libs/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: '    '});</script>
+
+
+
+
+<script src="/libs/particles/particles.min.js"></script>
+<script src="/libs/particles/start_particles.js"></script>
+
+
+  </body>
+</html>

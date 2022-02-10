@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="/libs/katex/katex.min.css">
+     
+   <link rel="stylesheet" href="/libs/highlight/github.min.css">
+   
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+<link rel="stylesheet" href="/css/franklin.css">
+<link rel="stylesheet" href="/css/timothylin.css">
+
+<link rel="icon" href="/assets/personal.svg">
+
+   <title>Analysis of BogoSelectionSort</title>  
+  
+</head>
+<body class="bg-dark text-light">
+<div id="particles" class="position-fixed top-0 bottom-0 start-0 end-0"></div>
+<div class="d-flex flex-column justify-content-between flex-grow-1 position-absolute top-0 start-0 end-0 bottom-0">
+  <div class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark border-bottom border-1 border-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" aria-current="page" href="/">
+      <img src="/assets/personal.svg" alt="Timothy Lin's logo" width="30" height="30" class="d-inline-block align-text-top">
+      Timothy Lin
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="/posts/">Blog</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Places
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="https://work.timothylin.me/">
+              <i class="fas fa-fw fa-pen-nib" aria-hidden="true"></i> Polywork
+            </a></li>
+            <li><a class="dropdown-item" href="https://www.linkedin.com/in/tmthyln/" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i> LinkedIn
+            </a></li>
+            <li><a class="dropdown-item" href="https://github.com/tmthyln/" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-github-square" aria-hidden="true"></i> GitHub
+            </a></li>
+            <li><a class="dropdown-item" href="https://www.cs.umd.edu/~tlin/" rel="nofollow noopener noreferrer">
+              <i class="fas fa-fw fa-university" aria-hidden="true"></i> UMD CS Website
+            </a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+  <div id="main" class="container" role="main">
+
+
+<div class="franklin-content" >
+  <h1 id="from_bogoselectionsort_to_infinity_and_beyond!" ><a href="#from_bogoselectionsort_to_infinity_and_beyond!"> From BogoSelectionSort to infinity and beyond!</a></h1><div class="toc"><ol><li><a href="#best_case_analysis"> Best-case analysis</a></li><li><a href="#worst_case_analysis"> Worst-case analysis</a></li><li><a href="#average_case_analysis"> Average-case analysis</a><ol><li><a href="#expectation_of_\(\text{inner}(\cdot)\)"> Expectation of \(\text{Inner}(\cdot)\)</a></li></ol></li><li><a href="#median_case_analysis"> Median-case analysis</a><ol><li><a href="#linearity_of_medians_(special_case)"> Linearity of medians (special case)</a></li><li><a href="#median_of_\(\text{inner}(\cdot)\)"> Median of \(\text{Inner}(\cdot)\)</a></li><li><a href="#putting_it_all_together"> Putting it all together</a></li></ol></li><li><a href="#a_worse_sort?"> A worse sort?</a></li></ol></div><p>A student in a class I TA for at UMD decided to make a variant of a BOGO sort that has selection sort-like properties. On Piazza, they asked what the runtime would be, guessing a median runtime of \(O(n^2n!)\).</p>
+<p>Here’s the code in Java (pretty much verbatim):</p>
+<pre><code class="java">public static ArrayList&lt;Integer&gt; bogoSelectionSort(ArrayList&lt;Integer&gt; list) &lbrace;
+    ArrayList&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+    int size = list.size();
+
+    for (int i = 0; i &lt; size(); i++) &lbrace;
+        int min = list.get(0);
+
+        for (int j = 0; j &lt; list.size(); j++)
+            for (list.get(j) &lt; min)
+                min = list.get(j);
+
+        if (min == list.get(0)) &lbrace;
+            ans.add(min);
+            list.remove(0);
+        &rbrace; else &lbrace;
+            Collections.shuffle(list);
+            i--;
+        &rbrace;
+    &rbrace;
+    return ans;
+&rbrace;</code></pre>
+<h2 id="best_case_analysis" ><a href="#best_case_analysis"> Best-case analysis</a></h2><p>Well, obviously, the best case happens when we very, very luckily always get the minimum to be the first element (or the input is already sorted). Approximately,</p>
+<ul>
+<li>the outer for loop runs proportional to \(n = \mathtt{list.size()}\),</li>
+<li>the inner loop will run in time proportional to \(n\),</li>
+<li><code>list.remove(0)</code> will run in time proportional to \(n\), and</li>
+<li><code>Collections.shuffle(list)</code> will run in time proportional to \(n\).</li>
+</ul>
+<p>Overall, best case is \(O(n^2)\).</p>
+<h2 id="worst_case_analysis" ><a href="#worst_case_analysis"> Worst-case analysis</a></h2><p>It could run forever. \(O(\infty)\). (This is just as useful as the best-case analysis above.)</p>
+<h2 id="average_case_analysis" ><a href="#average_case_analysis"> Average-case analysis</a></h2><p>To model the outer <code>for</code>-loop, we can describe it as a linear number of operations of the body. Even though we might repeat a step, we can model that as part of what's happening inside the loop. So we can model the complexity as</p>
+\[  T(n) = \sum_{i=0}^{n-1} \text{Inner}(i)  \]
+<p>For the average-case, we care the expectation of the exact formula.</p>
+\[ 
+\begin{aligned}\mathbb{E}\big[ T(n) \big] &= \mathbb{E}\Bigg[ T(n) = \sum_{i=0}^{n-1} \text{Inner}(i) \Bigg] \\
+&= \sum_{i=0}^{n-1} \mathbb{E}\big[ \text{Inner}(i) \big] \quad\text{ (linearity of expectation)}\end{aligned}
+ \]
+<h3 id="expectation_of_\(\text{inner}(\cdot)\)" ><a href="#expectation_of_\(\text{inner}(\cdot)\)"> Expectation of \(\text{Inner}(\cdot)\)</a></h3><p>First, we'll find a closed form for the inner function, given a particular iteration index <code>i</code>, and then find its expectation.</p>
+<p>Note that so long as we continue to fail to get the minimum of the list in the right position, we do the same amount of work since the size of the list doesn't change. Once we succeed, the size of the list changes (and thus the amount of work done). At a high level,</p>
+\[  \text{Inner}(i, k) = k \cdot \text{work done per failure} + \text{work done on success}  \]
+<p>So how much work is done for each failure (for a fixed <code>i</code>)?
+Regardless of success or failure, we look for the minimum of the remaining elements of the list, which takes time about \(n-i\).
+On fail, the list is shuffled in time \(n-i\).
+On success, the minimum is added to the result <code>ArrayList</code> and removed from the front of the list taking time \(n-1\).
+In both cases, we do \(\approx 2(n-i)\) work.</p>
+\[ 
+\begin{aligned}\text{Inner}(i, k; n) &= k \cdot 2(n-i) + 2(n-i) \\
+&= 2(n-i)(k+1)\end{aligned}
+ \]
+<p>Now, finding the expectation of our function,</p>
+\[ 
+\begin{aligned}\mathbb{E}\big[ \text{Inner}(i, k; n) \big] &= \mathbb{E}\big[ 2(n-i)(k+1) \big] \\
+&= 2(n-i)\mathbb{E}\big[ k \big] + 2(n-i) \quad\text{ (linearity of expectation)}\end{aligned}
+ \]
+<p>For a given iteration (at index <code>i</code>), how many failures do we expect before the first success? This is a classic application of a geometric distribution. We'll use the following definition:</p>
+\[  P(k; p) = p(1-p)^k \quad\text{ with} \quad \mathbb{E}\big[ k \big] = \dfrac{1-p}{p}  \]
+<p>where \(p\) is the probability of success.</p>
+<p>At iteration <code>i</code>, there are \(n-i\) elements in the list, so we have a \(\dfrac{1}{n-i}\) probability of getting the minimum in the  first position (given a proper, uniformly random shuffle and the list contains distinct elements). Now, we can calculate the expectation of \(k\).</p>
+\[ 
+\begin{aligned}\mathbb{E}\big[ k \big] &= \dfrac{1-p}{p}\Big\vert_{p = \frac{1}{n-i}} \\
+&= \dfrac{1-\frac{1}{n-i}}{\frac{1}{n-i}} \\
+&= n - i - 1,\end{aligned}
+ \]
+<p>giving us an average of \(n-i-1\) failures. Substituting into the full expectation,</p>
+\[ 
+\begin{aligned}\mathbb{E}\big[ T(n) \big] &= \sum_{i=0}^{n-1} \mathbb{E}\big[ \text{Inner}(i) \big] \\
+&= \sum_{i=0}^{n-1} 2(n-i)\mathbb{E}\big[ k \big] + 2(n-i) \\
+&= \sum_{i=0}^{n-1} 2(n-i)(n-i-1) + 2(n-i) \\
+&= 2 \sum_{i=0}^{n-1} (n-i)^2 \\
+&= 2 \sum_{i=1}^n i^2 \quad\text{ (change of variables)} \\
+&= \dfrac{n(n+1)(2n+1)}{3} \quad\text{ (sum of squares)} \\
+&\in O(n^3)\end{aligned}
+ \]
+<h2 id="median_case_analysis" ><a href="#median_case_analysis"> Median-case analysis</a></h2><p>Suppose we want to know the median instead of the average amount of work done? It would be really nice if we could just reuse the analysis from above but substitute the median of the geometric distribution: \(\Bigg\lceil \dfrac{-1}{\lg(1-p)} \Bigg\rceil - 1\). However, there are some issues we should resolve first (which might make the analysis more complicated):</p>
+<ol>
+<li>In general, there's no linearity of medians.</li>
+<li>There's inconsistent notation for medians, so I'll use \(\mu_{1/2}\big[\cdot\big]\) as a median operator.</li>
+<li>Medians are discrete, not continuous like expectations. We'll have to bound the expression to make it useful. (See how the median of the geometric distribution contains a ceiling operation.)</li>
+</ol>
+<h3 id="linearity_of_medians_(special_case)" ><a href="#linearity_of_medians_(special_case)"> Linearity of medians (special case)</a></h3><p>Although there's no linearity of medians in general, it does hold for the geometric distribution. Specifically, <em>monotonically decreasing distributions</em> are closed under (positive) scalar multiplication and addition. For monotonically decreasing distributions \(X\) and \(Y\),</p>
+<ol>
+<li><strong>Multiplication by a positive scalar.</strong>  \(\mu_{1/2}\big[ aX \big] = a\mu_{1/2}\big[X\big]\) where \(a\) is a positive real. Scaling all values by the same amount doesn't change the relative order. If \(a\) were allowed to be non-positive, then either \(X\) would have no order (if \(a=0\)) or the order would be reversed (if \(a < 0\)).</li>
+<li><strong>Addition of a scalar.</strong> By similar logic, \(\mu_{1/2}\big[ X + c \big] = \mu_{1/2}\big[X\big] + c\), where \(c\) is any real. Relative order is preserved.</li>
+<li><strong>Addition.</strong> Adding \(X\) to \(Y\) doesn't change the order of \(Y\) (or vice versa). For \(i < j\), it must be the case that \(X_i + Y_i > X_j + Y_j\), since both \(X_i > X_j\) and \(Y_i > Y_j\).
+So in this case, we <em>can</em> apply linearity.</li>
+</ol>
+<h3 id="median_of_\(\text{inner}(\cdot)\)" ><a href="#median_of_\(\text{inner}(\cdot)\)"> Median of \(\text{Inner}(\cdot)\)</a></h3><p>Because we now have linearity, we can start from the inner function from before.</p>
+\[ 
+\begin{aligned}\text{Inner}(i, k; n) &= 2(n-i)(k+1) \\
+\mu_{1/2}\big[ \text{Inner}(i, k; n) \big] &= \mu_{1/2}\big[ 2(n-i)(k+1) \big] \\
+&= 2(n-i)\Big( \mu_{1/2}\big[ k \big] \Big) \quad\text{ (special case of linearity of medians)} \\
+&= 2(n-i)\Bigg\lceil \dfrac{-1}{\lg(1-p)} \Bigg\rceil \quad\text{ (using the median of the geometric distribution)} \\
+&< 2(n-i)\Bigg( \dfrac{-1}{\lg(1-p)} + 1 \Bigg) \quad\text{ (upper bound on the ceiling function)} \\
+&= 2(n-i)\Bigg( \dfrac{-1}{\lg(1-\frac{1}{n-i})} + 1 \Bigg)\end{aligned}
+ \]
+<p>Note that the function is ill-defined for \(i = n - 1\) since we would need to evaluate \(\lg(0)\). So we can evaluate what happens in the case separately. When \(i = n - 1\), there is \(n-(n-1) = 1\) element in the list. With only one element in the list, it must be in the first position, so we do \(2(n-(n-1)) = 2\) steps of work. To be precise, the median of the function \(\text{Inner}(i; n)\) is bounded (and can be approximated) by</p>
+\[  \mu_{1/2}\big[ \text{Inner}(i; n) \big] < \begin{cases}2(n-i)\Bigg( \dfrac{-1}{\lg(1-\frac{1}{n-i})} + 1 \Bigg) & i < n - 1 \\ 2 & i = n - 1\end{cases} \]
+<h3 id="putting_it_all_together" ><a href="#putting_it_all_together"> Putting it all together</a></h3><p>Coming back to the original problem, we want to find the median of our original definition of \(T(n)\):</p>
+\[ 
+\begin{aligned}\mu_{1/2}\big[ T(n) \big] &= \mu_{1/2}\Big[ \sum_{i=0}^{n-1} \text{Inner}(i; n) \Big] \\
+&= \sum_{i=0}^{n-1} \mu_{1/2}\big[ \text{Inner}(i; n) \big] \quad\text{ (special case of linearity of medians)} \\
+&= 2 + \sum_{i=0}^{n-2} \mu_{1/2} \big[ Inner(i; n) \big] \quad\text{ (exclude problematic index)} \\
+&< 2 + 2 \sum_{i=0}^{n-2} (n-i)\Bigg( \dfrac{-1}{\lg\Big( 1 - \frac{1}{n-i} \Big)} + 1 \Bigg) \quad\text{ (using upper bound on median)} \\
+&= 2 + 2 \sum_{i=2}^n i\Bigg( \dfrac{-1}{\lg\Big( 1 - \frac{1}{n-i} \Big)} + 1 \Bigg) \quad\text{ (change of variables)} \\
+&= 2 + 2 \sum_{i=2}^n i + 2 \sum_{i=2}^n \dfrac{-1}{\lg\Big( 1 - \frac{1}{i} \Big)} \quad\text{ (separate summation terms)} \\
+&= n(n+1) + 2 \sum_{i=2}^n \dfrac{-i}{\lg\Big( 1 - \frac{1}{i} \Big)} \quad\text{ (Gauss's sum)}\end{aligned}
+ \]
+<p>Now, it's not easy to get \(\dfrac{-i}{\lg\big( 1 - \frac{1}{i} \big)}\) into an explicit form, so we'll try bounding it with a polynomial. Let's guess \(i^2\) as our upper bound.</p>
+\[ 
+\begin{aligned}\lim_{i\rightarrow\infty} \dfrac{i^2}{\dfrac{-i}{\lg\big( 1-\frac{1}{i} \big)}} &= \lim_{i\rightarrow\infty} \bigg( -i\lg\Big( 1-\frac{1}{i} \Big) \bigg) \\
+&= \lim_{i\rightarrow\infty} \dfrac{-\lg\big( 1-\frac{1}{i} \big)}{1/i} \quad\text{ (rewrite into indeterminate form $\frac{0}{0}$)} \\
+&= \lim_{i\rightarrow\infty} \dfrac{-\Big( 1-\frac{1}{i} \Big)^{-1}/i^2}{-1/i^2} \quad\text{ (l'Hôpital's Rule)} \\
+&= \lim_{i\rightarrow\infty} \dfrac{1}{1-\dfrac{1}{i}} \\
+&= 1\end{aligned}
+ \]
+<p>Since 1 is finite and nonzero, our "bad" function from above, \(\dfrac{-i}{\lg\big( 1 - \frac{1}{i} \big)}\), can be bounded by a constant multiple of \(i^2\), so long as we choose a big enough multiple. It turns out that \(i^2\) is already big enough. For positive \(i\), if we try to find the intersection points between the two functions:</p>
+\[ 
+\begin{aligned}i^2 &= \dfrac{-i}{\lg\big( 1-\frac{1}{i} \big)} \\
+\frac{-1}{i} &= \lg\big( 1 - \frac{1}{i} \big) \\
+x &= \lg(1 + x), \forall x < 0 \quad\text{ (letting $x=\frac{-1}{i}$)} \\
+2^x &= x + 1\end{aligned}
+ \]
+<p>For negative \(x\), there are no values that satisfy that equation, so there are also no intersection points between the two functions. Since</p>
+\[  \dfrac{-i}{\lg\big( 1- \frac{1}{i} \big)}\Bigg\vert_{i=2} = 2 < 4 = i^2\Big\vert_{i=2},  \]
+<p>we have an upper bound. Going back to our median,</p>
+\[ 
+\begin{aligned}\mu_{1/2}\big[ T(n) \big] &= n(n+1) + 2 \sum_{i=2}^n \dfrac{-i}{\lg\big( 1-\frac{1}{i} \big)} \\
+&< n(n+1) + 2 \sum_{i=2}^n i^2 \\
+&= n(n+1) + \dfrac{n(n+1)(2n+1)}{3} \quad\text{ (sum of squares)} \\
+&\in O(n^3)\end{aligned}
+ \]
+<p>So both the average and median cases result in the same estimate of a cubic algorithm.</p>
+<h2 id="a_worse_sort?" ><a href="#a_worse_sort?"> A worse sort?</a></h2><p>So even though this sorting algorithm is naive and inefficient, it's not really all that inefficient. In fact, it's really only one simple step away from a typical quadratic sorting algorithm. How could we get something that is really inefficient? That's the question addressed in <em>How inefficient can a sort algorithm be?</em><sup><a href="#fn_1">[1]</a></sup>
+<a id="fnref_1"></a>
+. The paper describes a method to make an abitrarily inefficient sorting algorithm.</p>
+
+  <div class="page-foot">
+  
+
+</div>
+
+</div>
+
+
+      </div> 
+      <div class="footer flex-grow-0 mt-auto bg-dark border-top border-light">
+          <footer>
+              <div class="copyright text-center mb-3 mt-3">&copy; Timothy Lin. Last modified: 1.6445099281290176e9. Powered by <a href="https://github.com/tlienart/Franklin.jl">Franklin</a>.</div>
+          </footer>
+      </div>
+    </div>   
+
+    
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+
+
+<script defer src="https://use.fontawesome.com/releases/v5.8.2/js/all.js" integrity="sha384-DJ25uNYET2XCl5ZF++U8eNxPWqcKohUUBUpKGlNLMchM7q4Wjg2CUpjHLaL8yYPH" crossorigin="anonymous"></script>
+
+
+
+    <script src="/libs/katex/katex.min.js"></script>
+<script src="/libs/katex/auto-render.min.js"></script>
+<script>renderMathInElement(document.body)</script>
+
+
+
+
+
+    <script src="/libs/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: '    '});</script>
+
+
+
+
+<script src="/libs/particles/particles.min.js"></script>
+<script src="/libs/particles/start_particles.js"></script>
+
+
+  </body>
+</html>

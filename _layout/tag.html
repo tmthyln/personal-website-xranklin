@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{insert style.html}}
+  <title>Tag: {{fill fd_tag}}</title>
+</head>
+{{insert body_layout.html}}
+
+  <div class="franklin-content">
+    <h1>Tag: {{ fill fd_tag }}</h1>
+    {{ taglist }}
+    {{ insert page_foot.html }}
+  </div>
+
+<!-- close what is opened in body_layout.html -->
+{{ insert foot.html }}

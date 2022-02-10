@@ -6,6 +6,8 @@ The website_* must be defined for the RSS to work
 +++
 author = "Timothy Lin"
 
+prepath = "personal-website-xranklin"
+
 website_title = "Timothy Lin"
 website_descr = "Personal website and blog for Tim Lin"
 website_url   = "https://timothylin.me"

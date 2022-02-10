@@ -4,4 +4,3 @@
 
 {{ postcard "/posts/210118-leftprime/" }}
 {{ postcard "/posts/191120-bogosorting" }}
-

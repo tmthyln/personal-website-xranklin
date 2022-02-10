@@ -12,14 +12,17 @@ function tag_badge(tag_name)
 end
 
 function hfun_postcard(params)
-    page_rpath = strip(params[1], ['/'])
+    page_rpath = strip(params[1], ['/', '"'])
+
     title = pagevar(page_rpath, "title")
     description = pagevar(page_rpath, "desc")
     tags = pagevar(page_rpath, "tags")
     date = pagevar(page_rpath, "date")
     formatted_date = "$(dayname(date)), $(monthabbr(date)) $(day(date)), $(year(date))"
-    link = params[1]
-    image = length(params) ≥ 2 ? """<img class="card-img-top" src="$(params[2])" />""" : ""#"<div class="card-img-top" style="background-color: blue"></div>"""
+    link = "/" * page_rpath
+    image = length(params) ≥ 2 ?
+        """<img class="card-img-top" src="$(params[2])" />""" :
+        ""#"<div class="card-img-top" style="background-color: blue"></div>"""
 
     tag_html = join(tag_badge.(tags), "\n")
 
@@ -35,4 +38,3 @@ function hfun_postcard(params)
     </div>
     """
 end
-

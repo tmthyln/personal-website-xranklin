@@ -103,7 +103,7 @@ At iteration `i`, there are $n-i$ elements in the list, so we have a $\dfrac{1}{
     &= \dfrac{1-\frac{1}{n-i}}{\frac{1}{n-i}} \\
     &= n - i - 1,
 \end{align}
-<!--
+
 giving us an average of $n-i-1$ failures. Substituting into the full expectation,
 
 \begin{align}
@@ -115,6 +115,7 @@ giving us an average of $n-i-1$ failures. Substituting into the full expectation
     &= \dfrac{n(n+1)(2n+1)}{3} \reason{(sum of squares)} \\
     &\in O(n^3)
 \end{align}
+
 
 ## Median-case analysis
 Suppose we want to know the median instead of the average amount of work done? It would be really nice if we could just reuse the analysis from above but substitute the median of the geometric distribution: $\Bigg\lceil \dfrac{-1}{\lg(1-p)} \Bigg\rceil - 1$. However, there are some issues we should resolve first (which might make the analysis more complicated):
@@ -193,4 +194,4 @@ So both the average and median cases result in the same estimate of a cubic algo
 ## A worse sort?
 So even though this sorting algorithm is naive and inefficient, it's not really all that inefficient. In fact, it's really only one simple step away from a typical quadratic sorting algorithm. How could we get something that is really inefficient? That's the question addressed in _How inefficient can a sort algorithm be?_[^1]. The paper describes a method to make an abitrarily inefficient sorting algorithm.
 
-[^1]: **Miguel A. Lerma**. [_How inefficient can a sort algorithm be?_](https://arxiv.org/abs/1406.1077) June 5, 2014. -->
+[^1]: **Miguel A. Lerma**. [_How inefficient can a sort algorithm be?_](https://arxiv.org/abs/1406.1077) June 5, 2014.
